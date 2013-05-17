@@ -1,0 +1,254 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>脚本异步加载、顺序执行技术(临时稿) - Victory's Blog</title>
+	<meta name="author" content="VictoryZhang(CN)">
+
+	
+	<meta name="description" content="脚本异步加载、顺序执行技术(临时稿) 无阻塞加载脚本 （1）XHR Eval 技术：该技术主要通过 XMLHttpRequest 对象从服务器端获取脚本 var xhrObject = getXHRObject(); xhrObject.onreadystatechange = function &hellip;">
+	
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link href="/blog/atom.xml" rel="alternate" title="Victory's Blog" type="application/atom+xml">
+	
+	<link rel="canonical" href="http://eniac0001.github.io/blog/blog/2013/04/23/js-ansy-load/">
+	<link href="/blog/favicon.png" rel="shortcut icon">
+	<link href="/blog/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script src="/blog/javascripts/jquery-1.7.2.min.js"></script>
+	<!--<link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,400,700' rel='stylesheet' type='text/css'>-->
+	<!--No include Google Font(custom/header.html)-->
+</head>
+
+
+<body>
+	<div class="container">
+		<div class="left-col">
+			<div class="intrude-less">
+			<header id="header" class="inner"><div class="profilepic">	
+		<img src='/images/face.png' alt='My Picture' />
+</div>
+<h1><a href="/blog/">Victory's Blog</a></h1>
+<nav id="main-nav"><ul class="main-navigation">
+  <li><a href="http://woerwosi.com/">主页</a></li>
+  <li><a href="/blog/">博客</a></li>
+  <li><a href="/blog/blog/archives">文章归档</a></li>
+  <li style="color:#f3f8e3;margin-top:10px;padding:10px 0;border-top:1px dashed #999;border-bottom:1px dashed #999;">Neither do people light a lamp and put it under a bowl. Instead they put it on its stand, and it gives light to everyone in the house.（出自于《圣经》）
+  </li>
+</ul>
+</nav>
+<nav id="sub-nav">
+	<div class="social">
+		
+		<a class="sina" href="http://www.weibo.com/512364662" title="SinaWeiBo">SinaWeiBo</a>
+		
+		
+		<a class="github" href="https://github.com/eniac0001" title="GitHub">GitHub</a>
+		
+		
+		<a class="linkedin" href="http://cn.linkedin.com/in/victoryzhang" title="LinkedIn">LinkedIn</a>
+		
+		
+		<a class="rss" href="/blog/atom.xml" title="RSS">RSS</a>
+		
+	</div>
+	
+</nav>
+</header>				
+			</div>
+		</div>	
+		<div class="mid-col">
+			
+				
+			
+			<div class="mid-col-container">
+				<div id="content" class="inner"><article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<h1 class="title" itemprop="name">脚本异步加载、顺序执行技术(临时稿)</h1>
+	<div class="entry-content" itemprop="articleBody"><h3>无阻塞加载脚本</h3>
+
+<p>（1）XHR Eval 技术：该技术主要通过 XMLHttpRequest 对象从服务器端获取脚本</p>
+
+<pre><code>var xhrObject = getXHRObject();
+
+xhrObject.onreadystatechange = function(){
+    if(xhrObject.readyState == 4 &amp;&amp; 200 == xhrObject.status){
+        //响应完成时，通过 eval() 执行内容
+        eval(xhrObject.responseText);
+    }
+};
+
+//必须和主页面在一个域中
+xhrObject.open('GET', 'A.js', true);
+xhrObject.send('');
+
+//获取 XMLHttpRequest 对象
+function getXHRObject(){
+    var xhrObject = false ;
+    try {
+        xhrObject = new XMLHttpRequest();
+    }
+    catch(e){
+        var progid = ['MSXML2.XMLHTTP.5.0', 
+                      'MSXML2.XMLHTTP.4.0', 
+                      'MSXML2.XMLHTTP.3.0', 
+                      'MSXML2.XMLHTTP', 
+                      'Microsoft.XMLHTTP'];
+        for(var i=0; i &lt; progid.length; ++i){
+            try {
+                xhrObject = new ActiveXObject(progid[i]);
+            }
+            catch(e){
+                continue ;
+            }
+            break;
+        }
+    }
+    finally {
+        return xhrObject;
+    }
+}
+</code></pre>
+
+<p>（2）XHR 注入 技术：也是通过 XMLHttpRequest 对象从服务器端获取脚本，与 eval 不同的是：该机制通过创建一个 script 的 DOM 元素，然后把 XMLHttpRequest 的响应注入到 script 中来执行 javascript 的；</p>
+
+<pre><code>var xhrObject = getXHRObject();
+
+xhrObject.onreadystatechange = function(){
+    if(xhrObject.readyState == 4){
+        var scriptElem = document.createElement('script');
+        document.getElementsByTagName('head')[0].appendChild(scriptElem);
+        scriptElem.text = xhrobject.responseText;
+    }
+};
+
+//必须和主页面在一个域中
+xhrObject.open('GET', 'A.js', true);
+xhrObject.send('');
+</code></pre>
+
+<h3>异步加载脚本时，如何保持执行顺序问题</h3>
+
+<h5>1、异步加载脚本时，单个外部脚本和行内代码执行顺序解决方案</h5>
+
+<p>（1）Script Onload 技术</p>
+
+<pre><code>采用 Script DOM Element 作为异步加载技术
+
+&lt;script type="text/javascript"&gt;
+
+var aExamples = [['couple-normal.php', 'Normal Script Src'], ...];
+
+function init() {
+    EFWS.Menu.createMenu('examplesbtn', aExamples);
+}
+
+var domscript = document.createElement('script');
+// menu.js 提供生成下拉菜单的功能
+domscript.src = "menu.js";
+domscript.onloadDone = false;   //防止 Opera 被执行两次
+domscript.onload = function(){
+    domscript.onloadDone = true;
+    init();
+};
+domscript.onreadystatechange = function(){
+    if(("loaded" === domscript.readyState || "complete" === domscript.readyState)&amp;&amp; !domscript.onloadDone){
+        domscript.onloadDone = true;
+        init();
+    }
+};
+
+document.getElementsByTagName('head')[0].appendChild(domscript);
+
+&lt;/script&gt;
+</code></pre>
+
+<h5>2、异步加载脚本时，多个外部脚本和行内代码执行顺序解决方案</h5>
+
+<p>（1）Managed XHR 技术</p>
+
+<p>（2）DOM Element 和 Document.write 技术</p>
+
+<h3>综合解决方案</h3>
+
+<p>（1）单个脚本</p>
+
+<p>说明：异步加载单个脚本的最佳技术是：Script DOM Element，Script Onload 是整合单个外部脚本和行内脚本的最好选择；</p>
+
+<p>（2）多个脚本</p>
+</div>
+
+</article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+
+	
+	  <span>
+	  <iframe
+		width="106"
+		scrolling="no"
+		height="24"
+		frameborder="0"
+		src=
+		  "http://hits.sinajs.cn/A1/weiboshare.html?url=http://eniac0001.github.io/blog/blog/2013/04/23/js-ansy-load/&amp;type=5&amp;title=脚本异步加载、顺序执行技术(临时稿)&amp;ralateUid=1875958817&amp;appkey=3501827776&amp;language=zh_cn" allowtransparency="true">
+	  </iframe>
+	  </span>
+    
+	
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+
+  <section>
+    <h1>Comments</h1>
+    <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread"></div>
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"woerwosi"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+<!-- Duoshuo Comment END --></div>
+  </section>
+
+</div>
+			</div>
+			<footer id="footer" class="inner"><p>
+  Copyright &copy; 2013 - VictoryZhang(CN) -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+Design credit: <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a></footer>
+			<script src="/blog/javascripts/slash.js"></script>
+<script src="/blog/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+
+
+
+
+
+		</div>
+	</div>
+</body>
+</html>

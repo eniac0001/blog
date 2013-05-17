@@ -1,0 +1,355 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>如何编写 jQuery 插件 - Victory's Blog</title>
+	<meta name="author" content="VictoryZhang(CN)">
+
+	
+	<meta name="description" content="如何编写 jQuery 插件 认识几款基于 jQuery 的插件 SimpleModal：为模态窗口开发提供接口；
+Form：是一款Ajax表单插件；
+LazyLoad：通过延迟加载来实现按需加载，达到节省资源，加快浏览速度的目的;
+Validation：表单验证插件;
+jQueryUI： &hellip;">
+	
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link href="/blog/atom.xml" rel="alternate" title="Victory's Blog" type="application/atom+xml">
+	
+	<link rel="canonical" href="http://eniac0001.github.io/blog/blog/2013/04/19/jqueryplugin/">
+	<link href="/blog/favicon.png" rel="shortcut icon">
+	<link href="/blog/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script src="/blog/javascripts/jquery-1.7.2.min.js"></script>
+	<!--<link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,400,700' rel='stylesheet' type='text/css'>-->
+	<!--No include Google Font(custom/header.html)-->
+</head>
+
+
+<body>
+	<div class="container">
+		<div class="left-col">
+			<div class="intrude-less">
+			<header id="header" class="inner"><div class="profilepic">	
+		<img src='/images/face.png' alt='My Picture' />
+</div>
+<h1><a href="/blog/">Victory's Blog</a></h1>
+<nav id="main-nav"><ul class="main-navigation">
+  <li><a href="http://woerwosi.com/">主页</a></li>
+  <li><a href="/blog/">博客</a></li>
+  <li><a href="/blog/blog/archives">文章归档</a></li>
+  <li style="color:#f3f8e3;margin-top:10px;padding:10px 0;border-top:1px dashed #999;border-bottom:1px dashed #999;">Neither do people light a lamp and put it under a bowl. Instead they put it on its stand, and it gives light to everyone in the house.（出自于《圣经》）
+  </li>
+</ul>
+</nav>
+<nav id="sub-nav">
+	<div class="social">
+		
+		<a class="sina" href="http://www.weibo.com/512364662" title="SinaWeiBo">SinaWeiBo</a>
+		
+		
+		<a class="github" href="https://github.com/eniac0001" title="GitHub">GitHub</a>
+		
+		
+		<a class="linkedin" href="http://cn.linkedin.com/in/victoryzhang" title="LinkedIn">LinkedIn</a>
+		
+		
+		<a class="rss" href="/blog/atom.xml" title="RSS">RSS</a>
+		
+	</div>
+	
+</nav>
+</header>				
+			</div>
+		</div>	
+		<div class="mid-col">
+			
+				
+			
+			<div class="mid-col-container">
+				<div id="content" class="inner"><article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<h1 class="title" itemprop="name">如何编写 jQuery 插件</h1>
+	<div class="entry-content" itemprop="articleBody"><h3>认识几款基于 jQuery 的插件</h3>
+
+<ul>
+<li><a href="http://simplemodal.plasm.it/">SimpleModal</a>：为模态窗口开发提供接口；</li>
+<li><a href="http://www.aqee.net/docs/jquery.form.plugin/jquery.form.plugin.html">Form</a>：是一款Ajax表单插件；</li>
+<li><a href="http://www.lazyload.com/">LazyLoad</a>：通过延迟加载来实现按需加载，达到节省资源，加快浏览速度的目的;</li>
+<li><a href="http://bassistance.de/jquery-plugins/jquery-plugin-validation/">Validation</a>：表单验证插件;</li>
+<li><a href="http://jqueryui.com/">jQueryUI</a>：jQuery用户界面插件；</li>
+</ul>
+
+
+<h3>jQuery 插件的种类</h3>
+
+<ol>
+<li>封装对象方法的插件：用于通过选择器获取的jQuery对象进行操作(最为常见)；</li>
+<li>封装全局函数的插件：将独立的函数加到jQuery命名空间下；</li>
+<li>选择器插件：扩充自己喜欢的选择器；</li>
+</ol>
+
+
+<p>主要就是这三种插件比较常用。</p>
+
+<p>jQuery.fn.extend()和jQuery.extend() 是用于扩展 jQuery 功能的两个方法；</p>
+
+<p>其中：</p>
+
+<blockquote><p>jQuery.fn.extend()用于扩展第一种类型的插件，jQuery.extend()用于扩展后两种类型的插件；这两个方法都有一个参数，类型为 Object, Object 对象的“名/值对”分别代表“函数或方法名/函数主体”；</p></blockquote>
+
+<p>jQuery.extend() 还可以扩展已有的 Object 对象；</p>
+
+<pre><code>jQuery.extend(target,obj1,...objN) 
+
+//用一个或多个其他对象扩展一个对象，然后返回被扩展的对象；
+
+例如：
+var setting = {validate:false, limit:5, name:"foo"};
+var option = {validate:true, name:"bar"};
+var newOption = jQuery.extend(setting, option);
+
+结果为：
+newOption = {validate:true, limit:5, name:"bar"};
+</code></pre>
+
+<p>jQuery.extend() 还可用来设置插件方法的默认参数：</p>
+
+<pre><code>例如：
+function foo(option){
+    option = jQuery.extend({
+        name:"bar",
+        length：5，
+        dateType:"xml"
+    }, option);
+};
+
+调用方法如下：
+foo({name:"a", length:4， dataType:"json"});
+...
+foo(name:"a");
+foo();
+注：传入的是映射而不是参数列表；
+</code></pre>
+
+<h3>封装插件时的注意事项：</h3>
+
+<ul>
+<li>jQuery插件的命名：一般采用<strong>jQuery.插件名.js</strong>，以免和其他js插件冲突；</li>
+<li>所有的对象方法都应附加到 jQuery.fn 对象上，所有的全局函数都应附加到 jQuery 对象本身上</li>
+<li>在插件内部，this 指向的是当前通过选择器获取的 jQuery 对象上，而不是 DOM 元素；</li>
+<li>可以通过 this.each 遍历所有元素；</li>
+<li>所有的方法或函数插件，都应以分好结尾，避免压缩的时候出现问题，甚至应该在插件头部加上分号，避免别人的不规范给插件带来影响；</li>
+<li>插件应该返回一个 jQuery 对象，以保证插件的可链式操作，除非插件需要返回的是一些需要获取的量，例如字符串或者数组等；</li>
+<li>避免在插件内部使用 $ 作为 jQuery 对象的别名，应使用完整的 jQuery 来表示，以避免冲突；可以利用<strong>闭包</strong>来回避这个问题；</li>
+</ul>
+
+
+<blockquote><p>闭包问题：</p>
+
+<p>(ECMAScript)允许使用内部函数，且内部函数可以访问他们所在的外部函数中声明的所有局部变量、参数和其它内部函数，当其中一个这样的内部函数在包含它们的外部函数之外被调用时，就会形成闭包；</p>
+
+<p>利用闭包的特性，既可以避免内部临时变量影响全局空间，又可以在插件内部继续使用 $ 作为 jQuery 的别名；</p></blockquote>
+
+<p>常见的 jQuery 插件的结构：</p>
+
+<pre><code>//; 作用是更好的兼容性
+;(function($){
+    //这里放置代码
+})(jQuery);     //jQuery 作为实参传递进去
+</code></pre>
+
+<h3>编写 jQuery 插件实例</h3>
+
+<blockquote><p>注：在此利用封装 jQuery 对象方法编写一个颜色插件，有两个功能：</p>
+
+<p>一是设置匹配元素的颜色；</p>
+
+<p>一是获取匹配元素（元素集合中的第一个）的颜色。</p></blockquote>
+
+<p>把此插件命名为 jquery.color.js;</p>
+
+<p>首先采用扩展第一类插件的方法进行编写，代码如下:</p>
+
+<pre><code>;(function($){
+
+    $.fn.extend({
+
+        "color" : function(value){
+            //这里编写插件代码
+            //若提供 value 值，则是设置颜色，否则是获取颜色
+        }
+
+    });
+
+})(jQuery);
+</code></pre>
+
+<p>下面实现第一个功能，设置颜色；代码如下</p>
+
+<pre><code>;(function($){
+
+    $.fn.extend({
+
+        "color" : function(value){
+
+            //this 指向 jQuery 对象
+            //使用 return 是要保证其具有可链接性
+            //css() 会返回调用它的对象，在此为 this
+            return this.css("color", value);
+
+        }
+
+    });
+
+})(jQuery);
+</code></pre>
+
+<p>接着实现第二个功能，获取匹配元素集合中第一个元素的颜色；代码如下：</p>
+
+<pre><code>;(function($){
+
+    $.fn.extend({
+
+        "color" : function(value){
+
+            if(value == undefined)
+            {
+                //css() 本身具有返回第一个匹配元素的样式值的功能，无需使用 eq()
+                return this.css("color");
+            }
+            else
+            {
+                return this.css("color", value);
+            }
+
+        }
+
+    });
+
+})(jQuery);
+</code></pre>
+
+<p>至此，两个功能都已实现；下面着手优化一下：</p>
+
+<pre><code>;(function($){
+
+    $.fn.extend({
+
+        "color" : function(value){
+
+            //css() 具有判断 value 是否为 undefined 的机制，所以可以根据不同的
+            //传递参数而返回不同的值；
+            return this.css("color", value);
+
+        }
+
+    });
+
+})(jQuery);
+</code></pre>
+
+<p>到此，此插件已完成，可自行实验一下。</p>
+
+<p>定义一组插件，可使用如下形式：</p>
+
+<pre><code>;(function($){
+
+    $.fn.extend({
+
+        "color" : function(value){
+
+        }，
+        "border" : function(value){
+        },
+        ...
+        "background" : function(value){
+        }     //最后一个没有逗号
+
+    });
+
+})(jQuery);
+</code></pre>
+
+<h3>参考文献</h3>
+
+<ol>
+<li><p>锋利的jQuery(第二版)</p></li>
+<li><p><a href="http://www.cnblogs.com/JustinYoung/archive/2010/03/30/jquery-chajian.html">跟我一起学写jQuery插件</a></p></li>
+</ol>
+
+</div>
+
+</article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+
+	
+	  <span>
+	  <iframe
+		width="106"
+		scrolling="no"
+		height="24"
+		frameborder="0"
+		src=
+		  "http://hits.sinajs.cn/A1/weiboshare.html?url=http://eniac0001.github.io/blog/blog/2013/04/19/jqueryplugin/&amp;type=5&amp;title=如何编写 jQuery 插件&amp;ralateUid=1875958817&amp;appkey=3501827776&amp;language=zh_cn" allowtransparency="true">
+	  </iframe>
+	  </span>
+    
+	
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+
+  <section>
+    <h1>Comments</h1>
+    <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread"></div>
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"woerwosi"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+<!-- Duoshuo Comment END --></div>
+  </section>
+
+</div>
+			</div>
+			<footer id="footer" class="inner"><p>
+  Copyright &copy; 2013 - VictoryZhang(CN) -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+Design credit: <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a></footer>
+			<script src="/blog/javascripts/slash.js"></script>
+<script src="/blog/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+
+
+
+
+
+		</div>
+	</div>
+</body>
+</html>
