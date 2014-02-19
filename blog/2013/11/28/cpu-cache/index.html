@@ -7,7 +7,7 @@
 	<meta name="author" content="VictoryZhang(CN)">
 
 	
-	<meta name="description" content="关于 CPU Cache 的一些事 Nov 28th, 2013 &nbsp;&nbsp;&nbsp;&nbsp;分类&nbsp;&nbsp; cpu 本文摘自于博文《漫游处理器缓存效应》，文章不仅仅用7个最简单的源码示例就将CPU cache的原理娓娓道来，还附加图表量化分析做数学上的佐证。 &hellip;">
+	<meta name="description" content="关于 CPU Cache 的一些事 日期:&nbsp;&nbsp; Nov 28th, 2013 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;分类:&nbsp;&nbsp; cpu 本文摘自于博文《漫游处理器缓存效应》，文章不仅仅用7个最简单的源码示例就将CPU &hellip;">
 	
 
   <!-- http://t.co/dKP3o1e -->
@@ -70,7 +70,7 @@
 			<div class="mid-col-container">
 				<div id="content" class="inner"><article class="post" itemscope itemtype="http://schema.org/BlogPosting">
 	<h1 class="title" itemprop="name">关于 CPU Cache 的一些事</h1>
-	
+	<div style="color:#A5A0A0;">日期:&nbsp;&nbsp;
 
 
 
@@ -83,13 +83,13 @@
 
 
 <time datetime="2013-11-28T19:00:00+08:00" data-updated="true" itemprop="datePublished">Nov 28<span>th</span>, 2013</time>
-	<span>&nbsp;&nbsp;&nbsp;&nbsp;分类&nbsp;&nbsp;
+	<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;分类:&nbsp;&nbsp;
 
 
 	<a class='category' href='/blog/blog/categories/cpu/'>cpu</a>
 
 
-</span>
+</span></div>
 	<div class="entry-content" itemprop="articleBody"><p>本文摘自于博文《漫游处理器缓存效应》，文章不仅仅用7个最简单的源码示例就将CPU cache的原理娓娓道来，还附加图表量化分析做数学上的佐证。很好的诠释了 CPU Cache 的一些知识。</p>
 
 <p>大多数读者都知道cache是一种快速小型的内存，用以存储最近访问内存位置。这种描述合理而准确，但是更多地了解一些处理器缓存工作中的“烦人”细节对于理解程序运行性能有很大帮助。</p>
