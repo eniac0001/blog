@@ -3,11 +3,11 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>关于 CPU Cache 的一些事 - Victory's Blog</title>
+	<title>关于 CPU Cache 的一些事 - WOERWOSI</title>
 	<meta name="author" content="VictoryZhang(CN)">
 
 	
-	<meta name="description" content="关于 CPU Cache 的一些事 本文摘自于博文《漫游处理器缓存效应》，文章不仅仅用7个最简单的源码示例就将CPU cache的原理娓娓道来，还附加图表量化分析做数学上的佐证。很好的诠释了 CPU Cache 的一些知识。 大多数读者都知道cache是一种快速小型的内存， &hellip;">
+	<meta name="description" content="关于 CPU Cache 的一些事 Nov 28th, 2013 &nbsp;&nbsp;&nbsp;&nbsp;分类&nbsp;&nbsp; cpu 本文摘自于博文《漫游处理器缓存效应》，文章不仅仅用7个最简单的源码示例就将CPU cache的原理娓娓道来，还附加图表量化分析做数学上的佐证。 &hellip;">
 	
 
   <!-- http://t.co/dKP3o1e -->
@@ -15,7 +15,7 @@
   <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-	<link href="/blog/atom.xml" rel="alternate" title="Victory's Blog" type="application/atom+xml">
+	<link href="/blog/atom.xml" rel="alternate" title="WOERWOSI" type="application/atom+xml">
 	
 	<link rel="canonical" href="http://eniac0001.github.io/blog/blog/2013/11/28/cpu-cache/">
 	<link href="/blog/favicon.png" rel="shortcut icon">
@@ -32,14 +32,14 @@
 		<div class="left-col">
 			<div class="intrude-less">
 			<header id="header" class="inner"><div class="profilepic">	
-		<img src='/images/face.png' alt='My Picture' />
+		<img src='http://woerwosi.com/blog/images/face.png' alt='My Picture' />
 </div>
-<h1><a href="/blog/">Victory's Blog</a></h1>
+<h1><a href="/blog/">WOERWOSI</a></h1>
 <nav id="main-nav"><ul class="main-navigation">
   <li><a href="http://woerwosi.com/">主页</a></li>
   <li><a href="/blog/">博客</a></li>
   <li><a href="/blog/blog/archives">文章归档</a></li>
-  <li style="color:#f3f8e3;margin-top:10px;padding:10px 0;border-top:1px dashed #999;border-bottom:1px dashed #999;">Neither do people light a lamp and put it under a bowl. Instead they put it on its stand, and it gives light to everyone in the house.（出自于《圣经》）
+  <li style="display:block;color:#f3f8e3;margin-top:10px;padding:10px 0;border-top:1px dashed #999;border-bottom:1px dashed #999;">总有一种力量使我们泪流满面
   </li>
 </ul>
 </nav>
@@ -70,6 +70,26 @@
 			<div class="mid-col-container">
 				<div id="content" class="inner"><article class="post" itemscope itemtype="http://schema.org/BlogPosting">
 	<h1 class="title" itemprop="name">关于 CPU Cache 的一些事</h1>
+	
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-28T19:00:00+08:00" data-updated="true" itemprop="datePublished">Nov 28<span>th</span>, 2013</time>
+	<span>&nbsp;&nbsp;&nbsp;&nbsp;分类&nbsp;&nbsp;
+
+
+	<a class='category' href='/blog/blog/categories/cpu/'>cpu</a>
+
+
+</span>
 	<div class="entry-content" itemprop="articleBody"><p>本文摘自于博文《漫游处理器缓存效应》，文章不仅仅用7个最简单的源码示例就将CPU cache的原理娓娓道来，还附加图表量化分析做数学上的佐证。很好的诠释了 CPU Cache 的一些知识。</p>
 
 <p>大多数读者都知道cache是一种快速小型的内存，用以存储最近访问内存位置。这种描述合理而准确，但是更多地了解一些处理器缓存工作中的“烦人”细节对于理解程序运行性能有很大帮助。</p>
