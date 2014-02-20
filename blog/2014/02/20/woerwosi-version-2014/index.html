@@ -3,11 +3,11 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>关于 CPU Cache 的一些事 - WOERWOSI</title>
+	<title>WOERWOSI Version2014 问题反馈 - WOERWOSI</title>
 	<meta name="author" content="VictoryZhang(CN)">
 
 	
-	<meta name="description" content="关于 CPU Cache 的一些事 日期:&nbsp;&nbsp; Nov 28th, 2013 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;分类:&nbsp;&nbsp; cpu 本文摘自于博文《漫游处理器缓存效应》，文章不仅仅用7个最简单的源码示例就将CPU &hellip;">
+	<meta name="description" content="WOERWOSI Version2014 问题反馈 日期:&nbsp;&nbsp; Feb 20th, 2014 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;分类:&nbsp;&nbsp; woerwosi WOERWOSI 新版预览图如下： 若您浏览时有出入的地方， &hellip;">
 	
 
   <!-- http://t.co/dKP3o1e -->
@@ -17,7 +17,7 @@
 
 	<link href="/blog/atom.xml" rel="alternate" title="WOERWOSI" type="application/atom+xml">
 	
-	<link rel="canonical" href="http://eniac0001.github.io/blog/blog/2013/11/28/cpu-cache/">
+	<link rel="canonical" href="http://eniac0001.github.io/blog/blog/2014/02/20/woerwosi-version-2014/">
 	<link href="/blog/favicon.png" rel="shortcut icon">
 	<link href="/blog/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
 	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
@@ -69,7 +69,7 @@
 			
 			<div class="mid-col-container">
 				<div id="content" class="inner"><article class="post" itemscope itemtype="http://schema.org/BlogPosting">
-	<h1 class="title" itemprop="name">关于 CPU Cache 的一些事</h1>
+	<h1 class="title" itemprop="name">WOERWOSI Version2014 问题反馈</h1>
 	<div style="color:#A5A0A0;">日期:&nbsp;&nbsp;
 
 
@@ -82,53 +82,22 @@
   
 
 
-<time datetime="2013-11-28T19:00:00+08:00" data-updated="true" itemprop="datePublished">Nov 28<span>th</span>, 2013</time>
+<time datetime="2014-02-20T12:26:00+08:00" data-updated="true" itemprop="datePublished">Feb 20<span>th</span>, 2014</time>
 	<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;分类:&nbsp;&nbsp;
 
 
-	<a class='category' href='/blog/blog/categories/cpu/'>cpu</a>
+	<a class='category' href='/blog/blog/categories/woerwosi/'>woerwosi</a>
 
 
 </span></div>
-	<div class="entry-content" itemprop="articleBody"><p>本文摘自于博文《漫游处理器缓存效应》，文章不仅仅用7个最简单的源码示例就将CPU cache的原理娓娓道来，还附加图表量化分析做数学上的佐证。很好的诠释了 CPU Cache 的一些知识。</p>
+	<div class="entry-content" itemprop="articleBody"><br />
 
-<p>大多数读者都知道cache是一种快速小型的内存，用以存储最近访问内存位置。这种描述合理而准确，但是更多地了解一些处理器缓存工作中的“烦人”细节对于理解程序运行性能有很大帮助。</p>
 
-<p>下面的例子都是用C#写的，但语言的选择同程序运行状况以及得出的结论几乎没什么影响。</p>
+<p>WOERWOSI 新版预览图如下：</p>
 
-<h4>示例1：内存访问和运行</h4>
+<p><img src="http://static-woerwosi.qiniudn.com/blog/20140220122312.png" alt="image" /></p>
 
-<pre><code>int[] arr = new int[64 * 1024 * 1024];
-
-// Loop 1
-for (int i = 0; i &lt; arr.Length; i++) arr[i] *= 3;
-
-// Loop 2
-for (int i = 0; i &lt; arr.Length; i += 16) arr[i] *= 3;
-</code></pre>
-
-<p>第一个循环将数组的每个值乘3，第二个循环将每16个值乘3，第二个循环只做了第一个约6%的工作，但在现代机器上，两者几乎运行相同时间：在我机器上分别是80毫秒和78毫秒。</p>
-
-<p>两个循环花费相同时间的原因跟内存有关。<strong>循环执行时间长短由数组的内存访问次数决定的，而非整型数的乘法运算次数。</strong>经过下面对第二个示例的解释，你会发现硬件对这两个循环的主存访问次数是相同的。</p>
-
-<h4>示例2：缓存行的影响</h4>
-
-<p>让我们进一步探索这个例子。我们将尝试不同的循环步长，而不仅仅是1和16。</p>
-
-<pre><code>for (int i = 0; i &lt; arr.Length; i += K) arr[i] *= 3;
-</code></pre>
-
-<p>下图为该循环在不同步长(K)下的运行时间：</p>
-
-<p><img src="/blog/images/blog/201311281.png" alt="image" /></p>
-
-<p>注意当步长在1到16范围内，循环运行时间几乎不变。但从16开始，每次步长加倍，运行时间减半。</p>
-
-<p>背后的原因是今天的CPU不再是按字节访问内存，而是以64字节为单位的块(chunk)拿取，称为一个缓存行(cache line)。当你读一个特定的内存地址，整个缓存行将从主存换入缓存，并且访问同一个缓存行内的其它值的开销是很小的。</p>
-
-<p>由于16个整型数占用64字节（一个缓存行），for循环步长在1到16之间必定接触到相同数目的缓存行：即数组中所有的缓存行。当步长为32，我们只有大约每两个缓存行接触一次，当步长为64，只有每四个接触一次。</p>
-
-<p>理解缓存行对某些类型的程序优化而言可能很重要。比如，数据字节对齐可能决定一次操作接触1个还是2个缓存行。那上面的例子来说，很显然操作不对齐的数据将损失一半性能。</p>
+<p>若您浏览时有出入的地方，可在评论中留言！感谢您的付出和支持！</p>
 </div>
 
 </article>
@@ -144,7 +113,7 @@ for (int i = 0; i &lt; arr.Length; i += 16) arr[i] *= 3;
 		height="24"
 		frameborder="0"
 		src=
-		  "http://hits.sinajs.cn/A1/weiboshare.html?url=http://eniac0001.github.io/blog/blog/2013/11/28/cpu-cache/&amp;type=5&amp;title=关于 CPU Cache 的一些事&amp;ralateUid=1875958817&amp;appkey=3501827776&amp;language=zh_cn" allowtransparency="true">
+		  "http://hits.sinajs.cn/A1/weiboshare.html?url=http://eniac0001.github.io/blog/blog/2014/02/20/woerwosi-version-2014/&amp;type=5&amp;title=WOERWOSI Version2014 问题反馈&amp;ralateUid=1875958817&amp;appkey=3501827776&amp;language=zh_cn" allowtransparency="true">
 	  </iframe>
 	  </span>
     
